@@ -11,10 +11,12 @@ Generate diff
 Usage:
   gendiff (-h|--help)
   gendiff (-v|--version)
+  gendiff [--format <fmt>] <firstFile> <secondFile>
 
 Options:
   -h --help                     Show this screen
   -v --version                  Show version
+  --format <fmt>                Report format [default: stylish]
 
 DOC;
 
@@ -25,4 +27,12 @@ if ($args['--help']) {
     echo $doc;
 } elseif ($args['--version']) {
     echo "gendiff version 1.0.0\n";
+} elseif ($args['--format']) {
+    $firstFile = $args['<firstFile'];
+    $secondFile = $args['<secondFile>'];
+    
+    $format = $args['--format'] ?: 'stylish';
+   
+    echo "Comparing files: $firstFile and $secondFile\n";
+    echo "Output format: $format\n";
 }
