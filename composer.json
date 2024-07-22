@@ -1,5 +1,8 @@
 {
     "name": "hexlet/code",
+    "autoload": {
+        "files": ["src/differ.php", "src/file1.json", "src/file2.json"]
+    },
     "bin": ["bin/gendiff"],
     "license": "MIT",
     "authors": [
