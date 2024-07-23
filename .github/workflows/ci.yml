@@ -31,7 +31,6 @@ jobs:
         # Run Linter
         run: make lint
       # Publish code coverage on Code Climate
-
       - name: Run test & publish code coverage
         uses: paambaati/codeclimate-action@v5
         env:
