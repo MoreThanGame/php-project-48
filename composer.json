@@ -1,5 +1,6 @@
 {
     "name": "hexlet/code",
+    "description": "project 2",
     "autoload": {
         "files": ["src/differ.php", "src/file1.json", "src/file2.json"]
     },
