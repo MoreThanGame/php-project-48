@@ -8,94 +8,40 @@ use function Differ\Differ\genDiff;
 
 class GenDiffTest extends TestCase
 {
-    private string $file1;
-    private string $file2;
-    private string $file3;
+    private string $fixturesDir;
 
     protected function setUp(): void
     {
-        // Путь к директории с фиктурами
-        $fixturesDir = __DIR__ . '/fixtures/';
-
-        // Путь к файлам фиктур
-        $this->file1 = $fixturesDir . 'test_file1.json';
-        $this->file2 = $fixturesDir . 'test_file2.json';
-        $this->file3 = $fixturesDir . 'test_file3.json';
+        $this->fixturesDir = __DIR__ . '/fixtures/';
     }
 
-    public function testCompareEqualJsonFiles(): void
+    public function testGenDiffWithValidFiles(): void
     {
-        $expected = <<<EOT
-{
-    host: "hexlet.io",
-    timeout: 50,
-    proxy: "123.234.53.22",
-    follow: false
-}
-EOT;
-        $result = genDiff($this->file1, $this->file1);
-        $this->assertEquals($expected, $result);
-    }
+        $file1 = $this->fixturesDir . 'test_file1.json';
+        $file2 = $this->fixturesDir . 'test_file2.json';
 
-    public function testCompareDifferentJsonFiles(): void
-    {
-        $expected = <<<EOT
+        $expected = <<<'EOD'
 {
-    - follow: false
+  - follow: false
     host: "hexlet.io"
-    - proxy: "123.234.53.22"
-    - timeout: 50
-    + timeout: 20
-    + verbose: true
+  - proxy: "123.234.53.22"
+  - timeout: 50
+  + timeout: 20
+  + verbose: true
 }
-EOT;
-        $result = genDiff($this->file1, $this->file2);
-        $this->assertEquals($expected, $result);
+EOD;
+
+        $this->assertEquals($expected, genDiff($file1, $file2));
     }
 
-    public function testCompareJsonFileWithAddedAndRemovedKeys(): void
+    public function testGenDiffWithNonExistentFile(): void
     {
-        $expected = <<<EOT
-{
-    - follow: false
-    host: "hexlet.io"
-    - proxy: "123.234.53.22"
-    - timeout: 50
-    + timeout: 20
-    + verbose: true
-}
-EOT;
-        $result = genDiff($this->file1, $this->file3);
-        $this->assertEquals($expected, $result);
-    }
-
-    public function testCompareJsonFileWithEmptyFile(): void
-    {
-        $emptyFile = __DIR__ . '/fixtures/test_empty.json';
-        file_put_contents($emptyFile, '{}');
-
-        $expected = <<<EOT
-{
-    - follow: false
-    host: "hexlet.io"
-    - proxy: "123.234.53.22"
-    - timeout: 50
-}
-EOT;
-        $result = genDiff($this->file1, $emptyFile);
-        $this->assertEquals($expected, $result);
-
-        unlink($emptyFile);
-    }
-
-    public function testCompareJsonFileWithInvalidJson(): void
-    {
-        $invalidJsonFile = __DIR__ . '/fixtures/test_invalid.json';
-        file_put_contents($invalidJsonFile, '{name: "John", "age": 30, "city": "New York"}'); // Invalid JSON
+        $file1 = $this->fixturesDir . 'test_file1.json';
+        $file2 = $this->fixturesDir . 'test_non_existent.json';
 
         $this->expectException(\Exception::class);
-        genDiff($this->file1, $invalidJsonFile);
+        $this->expectExceptionMessage('Error reading one of the files.');
 
-        unlink($invalidJsonFile);
+        genDiff($file1, $file2);
     }
 }

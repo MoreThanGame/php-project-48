@@ -42,19 +42,17 @@ function genDiff(string $file1, string $file2): string
         $lines = [];
 
         if ($oldValue !== null) {
-            $lines[] = " - $key: " . json_encode($oldValue);
+            $lines[] = "  - $key: " . json_encode($oldValue);
         }
 
         if ($newValue !== null) {
-            $lines[] = " + $key: " . json_encode($newValue);
+            $lines[] = "  + $key: " . json_encode($newValue);
         }
 
-        return $lines;
+        return implode("\n", $lines);
     }, $keys);
 
-    // Преобразуем массив строк в плоский массив и затем объединяем их в одну строку
-    $flatDiff = array_merge(...array_filter($diff, 'is_array'));
-
-    $output = implode("\n", $flatDiff);
+    // Объединяем строки различий в одну строку
+    $output = implode("\n", array_filter($diff));
     return "{\n$output\n}";
 }

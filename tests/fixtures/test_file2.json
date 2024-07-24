@@ -1,5 +1,5 @@
 {
-  "name": "John", 
-  "age": 30, 
-  "city": "Los Angeles"
+  "timeout": 20,
+  "verbose": true,
+  "host": "hexlet.io"
 }
