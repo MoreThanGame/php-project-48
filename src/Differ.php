@@ -2,29 +2,30 @@
 
 namespace Differ\Differ;
 
-function genDiff(string $file1, string $file2): string
+use function Parsers\parser;
+
+function convertToArray(mixed $data): array
 {
-    // Получаем содержимое файлов
-    $content1 = file_get_contents($file1);
-    $content2 = file_get_contents($file2);
-
-    // Проверяем на ошибки чтения файлов
-    if ($content1 === false || $content2 === false) {
-        throw new \Exception('Error reading one of the files.');
+    if (is_object($data)) {
+        $json = json_encode($data);
+        if ($json === false) {
+            throw new \RuntimeException('Error encoding object to JSON.');
+        }
+        $array = json_decode($json, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException('Error decoding JSON to array: ' . json_last_error_msg());
+        }
+        return $array;
     }
+    return $data;
+}
 
-    // Декодируем JSON содержимое в массивы
-    $data1 = json_decode($content1, true);
-    $data2 = json_decode($content2, true);
+function genDiff(string $file1, string $file2, string $format = 'stylish'): string
+{
+    [$data1, $data2] = parser($file1, $file2);
 
-    // Проверяем на ошибки декодирования JSON
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \Exception('Invalid JSON format in one of the files.');
-    }
-
-    // Обеспечиваем, что $data1 и $data2 являются массивами
-    $data1 = is_array($data1) ? $data1 : [];
-    $data2 = is_array($data2) ? $data2 : [];
+    $data1 = convertToArray($data1);
+    $data2 = convertToArray($data2);
 
     // Объединяем и сортируем ключи из обоих массивов
     $keys = array_keys(array_merge($data1, $data2));
@@ -40,7 +41,6 @@ function genDiff(string $file1, string $file2): string
         }
 
         $lines = [];
-
         if ($oldValue !== null) {
             $lines[] = "  - $key: " . json_encode($oldValue);
         }

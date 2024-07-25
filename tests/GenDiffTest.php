@@ -12,15 +12,15 @@ class GenDiffTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->fixturesDir = __DIR__ . '/fixtures/';
+        $this->fixturesDir = __DIR__ . '../../src/';
     }
 
-    public function testGenDiffWithValidFiles(): void
+    public function testGenDiffWithValidJsonFiles(): void
     {
-        $file1 = $this->fixturesDir . 'test_file1.json';
-        $file2 = $this->fixturesDir . 'test_file2.json';
+        $file1 = $this->fixturesDir . 'file1.json';
+        $file2 = $this->fixturesDir . 'file2.json';
 
-        $expected = <<<'EOD'
+        $expected = trim(<<<'EOD'
 {
   - follow: false
     host: "hexlet.io"
@@ -29,15 +29,46 @@ class GenDiffTest extends TestCase
   + timeout: 20
   + verbose: true
 }
-EOD;
+EOD);
 
         $this->assertEquals($expected, genDiff($file1, $file2));
     }
 
-    public function testGenDiffWithNonExistentFile(): void
+    public function testGenDiffWithNonExistentJsonFile(): void
     {
-        $file1 = $this->fixturesDir . 'test_file1.json';
+        $file1 = $this->fixturesDir . 'file1.json';
         $file2 = $this->fixturesDir . 'test_non_existent.json';
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Error reading one of the files.');
+
+        genDiff($file1, $file2);
+    }
+
+    public function testGenDiffWithValidYamlFiles(): void
+    {
+        $file1 = $this->fixturesDir . 'filepath1.yml';
+        $file2 = $this->fixturesDir . 'filepath2.yml';
+
+        $expected = trim(<<<'EOD'
+
+{
+  - follow: false
+    host: "hexlet.io"
+  - proxy: "123.234.53.22"
+  - timeout: 50
+  + timeout: 20
+  + verbose: true
+}
+EOD);
+
+        $this->assertEquals($expected, genDiff($file1, $file2));
+    }
+
+    public function testGenDiffWithNonExistentYamlFile(): void
+    {
+        $file1 = $this->fixturesDir . 'filepath1.yml';
+        $file2 = $this->fixturesDir . 'test_non_existent.yml';
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Error reading one of the files.');
