@@ -1,6 +1,8 @@
 /vendor/
-logs
+.editorconfig
+clover.xml
+*.cache
 *.swo
 *.swp
-*.cache
 build
+logs

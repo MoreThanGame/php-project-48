@@ -1,30 +1,57 @@
 <?php
 
-namespace Differ\Formatters\Plain;
+namespace Differ\Formaters\Plain;
 
-function plain(array $mergedTree, string $accName = ''): string
+function convertToStr(mixed $value)
 {
-    $lines = array_map(function ($elem) use ($accName) {
-        $name = $elem['name'];
-        if ($elem['status'] === 'nested') {
-            //$accName .= $name . '.';
-            return plain($elem['child'], "{$accName}{$name}.");
-        } elseif ($elem['status'] === 'added') {
-            $value = is_object($elem['value']) ? '[complex value]' : var_export($elem['value'], true);
-            return "Property '{$accName}{$elem['name']}' was added with value: {$value}";
-        } elseif ($elem['status'] === 'removed') {
-            return "Property '{$accName}{$elem['name']}' was removed";
-        } elseif ($elem['status'] === 'changed') {
-            $oldVal = is_object($elem['oldValue']) ? '[complex value]' : var_export($elem['oldValue'], true);
-            $oldValRes = $oldVal === 'NULL' ? 'null' : $oldVal;
-            $newVal = is_object($elem['newValue']) ? '[complex value]' : var_export($elem['newValue'], true);
-            $newValRes = $newVal === 'NULL' ? 'null' : $newVal;
-            return "Property '{$accName}{$elem['name']}' was updated. From {$oldValRes} to {$newValRes}";
-        } elseif ((string) $elem['status'] === 'removed') {
-            return "Property '{$accName}{$elem['name']}' was removed";
-        };
-    }, $mergedTree);
+    if ($value === true) {
+        return 'true';
+    }
+    if ($value === false) {
+        return 'false';
+    }
+    if ($value === null) {
+        return 'null';
+    }
+    if (is_array($value)) {
+        return '[complex value]';
+    }
+    return is_numeric($value) ? $value : "'$value'";
+}
 
-    $linesRes = array_filter($lines, fn($line) => $line);//claer clean lines from $lines array with value not changed.
-    return implode("\n", $linesRes);
+function walkTree(array $tree, array $path = [])
+{
+    $lines = array_map(
+        function ($node) use ($path) {
+            $newPath = array_merge($path, [$node['key']]);
+            $fullPath = implode('.', $newPath);
+            switch ($node['action']) {
+                case 'added':
+                    $normValue = convertToStr($node["value1"]);
+                    $result = "Property '$fullPath' was added with value: $normValue";
+                    break;
+                case 'removed':
+                    $result = "Property '$fullPath' was removed";
+                    break;
+                case 'changed':
+                    $normValue1 = convertToStr($node["value1"]);
+                    $normValue2 = convertToStr($node["value2"]);
+                    $result = "Property '$fullPath' was updated. From $normValue1 to $normValue2";
+                    break;
+                case 'nested':
+                    $result = walkTree($node["children"], $newPath);
+                    break;
+                default:
+                    $result = '';
+            }
+            return $result;
+        },
+        $tree
+    );
+    return implode("\n", array_filter($lines));
+}
+
+function formatPlain(array $tree)
+{
+    return walkTree($tree);
 }

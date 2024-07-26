@@ -1,8 +1,8 @@
 <?php
 
-namespace Differ\Formatters\Json;
+namespace Differ\Formaters\Json;
 
-function json(array $tree): string
+function formatJson(array $tree)
 {
     return json_encode($tree);
 }

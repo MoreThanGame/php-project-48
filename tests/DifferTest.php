@@ -1,55 +1,80 @@
 <?php
 
-namespace Differ\Tests;
+namespace Differ\Tests\DifferTest;
 
-require_once __DIR__ . '/../vendor/autoload.php';
 use PHPUnit\Framework\TestCase;
+
 use function Differ\Differ\genDiff;
 
 class DifferTest extends TestCase
 {
-    public function testGenDiff(): void
+    /**
+     * @param string $fixtureName
+     * @return string
+     */
+    private function getFixtureFullPath($fixtureName)
     {
-        $file1 = 'file1.json';
-        $file2 = 'file2.json';
-
-        $result = file_get_contents(__DIR__ . '/fixtures/diffs.txt');
-        $this->assertEquals($result, genDiff($file1, $file2, 'stylish'));
+        return __DIR__ . "/fixtures/" . $fixtureName;
     }
 
-    public function testYaml(): void
+    /**
+     * @dataProvider mainProvider
+     * @param string $file1
+     * @param string $file2
+     * @param string $expectedResult
+     * @param string $format
+     * @return void
+     */
+    public function testTwoGendiffs($file1, $file2, $format, $expectedResult)
     {
-        $file1 = 'file1.yml';
-        $file2 = 'file2.yml';
-
-        $result = file_get_contents(__DIR__ . '/fixtures/diffs.txt');
-        $this->assertEquals($result, genDiff($file1, $file2, 'stylish'));
+        $fixture1 = $this->getFixtureFullPath($file1);
+        $fixture2 = $this->getFixtureFullPath($file2);
+        $diffResult = file_get_contents($this->getFixtureFullPath($expectedResult));
+        $this->assertEquals($diffResult, genDiff($fixture1, $fixture2, $format));
     }
 
-    public function testNestedJson(): void
+    /**
+     * @return array<int, array<int, string>>
+     */
+    public static function mainProvider()
     {
-        $file1 = 'nested1.json';
-        $file2 = 'nested2.json';
-
-        $result = file_get_contents(__DIR__ . '/fixtures/nested.txt');
-        $this->assertEquals($result, genDiff($file1, $file2, 'stylish'));
-    }
-
-    public function testNestedYaml(): void
-    {
-        $file1 = 'nested1.yml';
-        $file2 = 'nested2.yml';
-
-        $result = file_get_contents(__DIR__ . '/fixtures/nested.txt');
-        $this->assertEquals($result, genDiff($file1, $file2, 'stylish'));
-    }
-
-    public function testPlain(): void
-    {
-        $file1 = 'nested1.yml';
-        $file2 = 'nested2.yml';
-
-        $result = file_get_contents(__DIR__ . '/fixtures/plainRes.txt');
-        $this->assertEquals($result, genDiff($file1, $file2, 'plain'));
+        return [
+            [
+                'file1.json',
+                'file2.json',
+                'stylish',
+                'result_stylish.txt'
+            ],
+            [
+                'file1.yaml',
+                'file2.yaml',
+                'stylish',
+                'result_stylish.txt'
+            ],
+            [
+                'file1.json',
+                'file2.json',
+                'plain',
+                'result_plain.txt'
+            ],
+            [
+                'file1.yaml',
+                'file2.yaml',
+                'plain',
+                'result_plain.txt'
+            ],
+            [
+                'file1.json',
+                'file2.json',
+                'json',
+                'result_json.txt'
+            ],
+            [
+                'file1.yaml',
+                'file2.yaml',
+                'json',
+                'result_json.txt'
+            ],
+        ];
     }
 }

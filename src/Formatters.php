@@ -1,19 +1,21 @@
 <?php
 
-namespace Differ\Formatters;
+namespace Differ\Formaters;
 
-use function Differ\Formatters\Plain\plain;
-use function Differ\Formatters\Stylish\stylish;
-use function Differ\Formatters\Stylish\toString;
-use function Differ\Formatters\Json\json;
+use function Differ\Formaters\Stylish\formatStylish;
+use function Differ\Formaters\Plain\formatPlain;
+use function Differ\Formaters\Json\formatJson;
 
-function formatTree(string $format, array $tree)
+function formatResult(array $tree, string $format): string
 {
-    if ($format === 'stylish') {
-        return toString(stylish($tree));
-    } elseif ($format === 'plain') {
-        return plain($tree);
-    } elseif ($format === 'json') {
-        return json($tree);
+    switch ($format) {
+        case 'stylish':
+            return formatStylish($tree);
+        case 'plain':
+            return formatPlain($tree);
+        case 'json':
+            return formatJson($tree);
+        default:
+            throw new \Exception("{$format} is invalid format");
     }
 }
