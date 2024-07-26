@@ -1,5 +1,9 @@
 #!/usr/bin/env php
+
 <?php
+
+use function Differ\Differ\genDiff;
+use function Differ\Parser\parse;
 
 $autoloadPath1 = __DIR__ . '/../../../autoload.php';
 $autoloadPath2 = __DIR__ . '/../vendor/autoload.php';
@@ -9,51 +13,27 @@ if (file_exists($autoloadPath1)) {
     require_once $autoloadPath2;
 }
 
-use Docopt\Handler;
-use function Differ\Differ\genDiff;
-
 $doc = <<<DOC
+
 Generate diff
 
-Usage:
-  gendiff (-h|--help)
-  gendiff (-v|--version)
-  gendiff [--format <fmt>] <firstFile> <secondFile>
+Usage: gendiff (-h | --help)
+       gendiff (-v | --version)
+       gendiff [--format <fmt>] <firstFile> <secondFile>
+
 
 Options:
-  -h --help                     Show this screen
-  -v --version                  Show version
-  --format <fmt>                Report format [default: stylish]
-
+    -h --help  Show this screen
+    -v --version  Show version
+    --format <fmt> Report format [default: stylish]
 DOC;
 
-$handler = new Handler();
-$args = $handler->handle($doc);
+$args = Docopt::handle($doc, ['version' => 'Generate diff 0.1']);
 
-if ($args['--help']) {
-
-    echo $doc;
-    exit(0);
-} elseif ($args['--version']) {
-    echo "gendiff version 1.0.0\n";
-    exit(0);
+if (!isset($args->args['--format'])) {
+    $format = 'stylish';
+} else {
+    $format = $args->args['--format'];
 }
 
-try {
-    // Извлечение аргументов из массива args
-    $firstFile = $args['<firstFile>'] ?? null;
-    $secondFile = $args['<secondFile>'] ?? null;
-    $format = $args['--format'] ?? 'stylish';
-
-    // Проверка наличия необходимых аргументов
-    if (!$firstFile || !$secondFile) {
-        throw new Exception("Both file paths must be provided.");
-    }
-
-    // Вызов функции genDiff и вывод результата
-    $diff = genDiff($firstFile, $secondFile, $format);
-    echo $diff;
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-    exit(1);
-}
+print_r(genDiff($args->args['<firstFile>'], $args->args['<secondFile>'], $format));
